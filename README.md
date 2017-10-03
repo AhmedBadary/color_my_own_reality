@@ -18,5 +18,5 @@ Happy coding!
 The Cloud9 IDE team
 
 
-## Support & Documentation
+## Technology
 We use PaperJS to simulate a coloring book expereince. Everything displayed is an SVG and the gradients are created using interpolation.
