@@ -1,0 +1,435 @@
+%canvas#paperCanvas
+#color-palette
+
+%a#button0{:href => "#"} Default
+%a{:id => "button1", :href => "#"}
+    GRADIENT
+    %br>/
+    [CLICK]
+// %div#tryDiv
+%a{:id => "button2", :href => "#"} Draw 
+%a{:id => "button3", :href => "#"} Rectangle 
+%div.styled-select.black.rounded
+    %select#selection
+        %option{:value => "2"} 
+        %option{:value => "3"} 3
+        %option{:value => "4"} 4
+        %option{:value => "5"} 5
+        %option{:value => "8"} 8
+
+.container
+    / preview element
+    .preview{:style => "background-color: rgb(0, 0, 0);"}
+    / colorpicker element
+    .colorpicker{:style => "display:none"}
+        %canvas#picker{:height => "300", :var => "1", :width => "300"}
+        .controls
+            %div
+                %label R
+                %input#rVal{:type => "text"}/
+            %div
+                %label G
+                %input#gVal{:type => "text"}/
+            %div
+                %label B
+                %input#bVal{:type => "text"}/
+            %div
+                %label RGB
+                %input#rgbVal{:type => "text"}/
+            %div
+                %label HEX
+                %input#hexVal{:type => "text"}/
+
+:javascript
+    $(function() {
+        window.ci = new ColoringInteraction();
+        $("#selection")[0].options[0].innerHTML = "# of Gradient Colors | default: 2";
+        $("#button0").on("click", function(event) {
+            event.preventDefault();
+            window.ci.defaultInteraction();
+        });
+        $("#button1").on("click", function(event) {
+            event.preventDefault();
+            var me = $(this);
+            var val = me.text();
+
+            if (val.replace(/\s+/g, '') === "GRADIENT[CLICK]") {
+                window.ci.drag = false;
+                me.html("GRADIENT<br>[DRAG]");
+            } else {
+                window.ci.drag = true;
+                me.html("GRADIENT<br>[CLICK]");
+            }
+            window.ci.myGradientInteraction();
+        });
+        $("#button2").on("click", function(event) {
+            event.preventDefault();
+            window.ci.myCustomInteraction();
+        });
+        $("#button3").on("click", function(event) {
+            event.preventDefault();
+            window.ci.myCustomInteraction_rect();
+        });
+        $("#selection").on('change', function() {
+            var selection = $(this);
+            var index = selection[0].selectedIndex;
+            var value = selection[0].options[index].value;
+            window.ci.gradNum = value;
+            window.ci.myGradientInteraction();
+        });
+        // 
+        // 
+        // 
+        
+        var bCanPreview = true; // can preview
+
+        // create canvas and context objects
+        var canvas = document.getElementById('picker');
+        var ctx = canvas.getContext('2d');
+
+        // drawing active image
+        var image = new Image();
+        image.onload = function () {
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height); // draw the image on the canvas
+        }
+
+        // select desired colorwheel
+        image.crossOrigin = "Anonymous";
+        // var imageSrc = '/color_wheel/images/tr3.png';
+        // var imageSrc = 'http://ahmedbadary.ml/main_files/colorwheel1.png';
+        var imageSrc = "http://ahmedbadary.ml/main_files/colorwheel1.png";
+        image.src = imageSrc;
+
+        $('#picker').mousemove(function(e) { // mouse move handler
+            if (bCanPreview) {
+                // get coordinates of current position
+                var canvasOffset = $(canvas).offset();
+                var canvasX = Math.floor(e.pageX - canvasOffset.left);
+                var canvasY = Math.floor(e.pageY - canvasOffset.top);
+
+                // get current pixel
+                var imageData = ctx.getImageData(canvasX, canvasY, 1, 1);
+                var pixel = imageData.data;
+
+                // update preview color
+                var pixelColor = "rgb("+pixel[0]+", "+pixel[1]+", "+pixel[2]+")";
+                $('.preview').css('backgroundColor', pixelColor);
+
+                // update controls
+                $('#rVal').val(pixel[0]);
+                $('#gVal').val(pixel[1]);
+                $('#bVal').val(pixel[2]);
+                $('#rgbVal').val(pixel[0]+','+pixel[1]+','+pixel[2]);
+
+                var dColor = pixel[2] + 256 * pixel[1] + 65536 * pixel[0];
+                $('#hexVal').val('#' + ('0000' + dColor.toString(16)).substr(-6));
+            }
+        });
+        $('#picker').click(function(e) { // click event handler
+            if (bCanPreview == true) {
+                cp.history.push(new paper.Color($('#hexVal').val()));
+            }
+            bCanPreview = !bCanPreview;
+            
+            
+        }); 
+        $('.preview').click(function(e) { // preview click
+            $('.colorpicker').fadeToggle("slow", "linear");
+            if (bCanPreview == false) {
+                setTimeout(function(){ bCanPreview = true; }, 1120);
+            } else {
+                bCanPreview = true;
+            }
+            // var curColor = new Color(parseInt($('#rVal').val()), parseInt($('#gVal').val()), parseInt($('#bVal').val()));
+        });
+    });
+    
+
+:scss
+    html, body{ height: 100%; width: 100%; }
+    #paperCanvas{
+        width: 100%;
+        height: 100%;
+        background: #f5f4f0;
+        cursor: pointer;
+        position: absolute;
+    }
+    
+    #tryDiv {
+        
+    }
+    
+    #button0 {
+    	-moz-box-shadow:inset 0px 0px 15px 3px #29bbff;
+    	-webkit-box-shadow:inset 0px 0px 15px 3px #29bbff;
+    	box-shadow:inset 0px 0px 15px 3px #29bbff;
+    	background-color:transparent;
+    	-moz-border-radius:42px;
+    	-webkit-border-radius:42px;
+    	border-radius:42px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#6969ff;
+    	font-family:Courier New;
+    	font-size:15px;
+    	font-weight:bold;
+    	padding:32px 9px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 0px #263666;    
+    }
+    #button0:hover {
+    	background-color:transparent;
+    }
+    
+    #button0 {
+        position: absolute;
+        top: 100px;
+        left: 1109px - 650px;
+    }
+    
+    #button0:active {
+    	top: 100px+1px;
+    }
+
+    #button1 {
+    	-moz-box-shadow:inset 0px 0px 15px 3px #3dc21b;
+    	-webkit-box-shadow:inset 0px 0px 15px 3px #3dc21b;
+    	box-shadow:inset 0px 0px 15px 3px #3dc21b;
+    	background-color:transparent;
+    	-moz-border-radius:42px;
+    	-webkit-border-radius:42px;
+    	border-radius:42px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#189e4b;
+    	font-family:Courier New;
+    	font-size:13px;
+    	font-weight:bold;
+    	padding:27px 10px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 0px #2f6627;
+    }
+    #button1:hover {
+    	background-color:transparent;
+    }
+    #button1:active {
+    	top:101px;
+    }
+
+    #button1 {
+        position: absolute;
+        top: 100px;
+        left: 1109px - 550px;
+    }
+    
+    #button2 {
+        -moz-box-shadow:inset 0px 0px 15px 3px #c21b1b;
+    	-webkit-box-shadow:inset 0px 0px 15px 3px #c21b1b;
+    	box-shadow:inset 0px 0px 15px 3px #c21b1b;
+    	background-color:transparent;
+    	-moz-border-radius:42px;
+    	-webkit-border-radius:42px;
+    	border-radius:42px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#9c1919;
+    	font-family:Courier New;
+    	font-size:19px;
+    	font-weight:bold;
+    	padding:31px 19px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 0px #2f6627;
+    }
+    #button2:hover {
+    	background-color:transparent;
+    }
+    #button2:active {
+    	top:101px;
+    }
+    #button2 {
+        position: absolute;
+        top: 100px;
+        left: 1109px - 450px;
+    }
+    #button3:hover {
+    	background-color:transparent;
+    }
+    #button3:active {
+    	top:101px;
+    }
+    #button3 {
+        -moz-box-shadow:inset 0px 0px 23px 4px #ebf058;
+    	-webkit-box-shadow:inset 0px 0px 23px 4px #ebf058;
+    	box-shadow:inset 0px 0px 23px 4px #ebf058;
+    	background-color:transparent;
+    	-moz-border-radius:42px;
+    	-webkit-border-radius:42px;
+    	border-radius:42px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#b0b52b;
+    	font-family:Courier New;
+    	font-size:13px;
+    	font-weight:bold;
+    	padding:36px 9px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 0px #66750e;
+        position: absolute;
+        top: 100px;
+        left: 1109px - 350px;
+    }
+    .black {
+        position: absolute;
+        top: 127px;
+        left: 1109px - 200px;
+    }
+    #selection {
+        position: fixed;
+        top: 127px;
+        left: 1109px - 200px;
+
+    }
+        
+    #color-palette{
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        
+        position: absolute;
+        height: 100px;
+        width: 90%;
+        margin: 0px 5%;
+        bottom: 5px;
+        z-index: 500;
+        border-radius: 5px;
+        background: desaturate(darken(blue, 30%), 80%);
+        .swatch{
+            display: block; 
+            margin: 5px;
+            height: 35px;
+            width: 35px;
+            border-radius: 20px;
+            cursor: pointer;
+            &.active{
+                border: 2px solid yellow;
+            }
+        }
+    }
+    
+    #button0:focus {
+      outline: none;
+    }
+    #button1:focus {
+      outline: none;
+    }
+    #button2:focus {
+      outline: none;
+    }
+    #button3:focus {
+      outline: none;
+    }
+    #selection:focus {
+      outline: none;
+    }
+    
+
+:css
+    .styled-select {
+       background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
+       height: 29px;
+       overflow: hidden;
+       width: 240px;
+    }
+    .styled-select select {
+       background: transparent;
+       border: none;
+       font-size: 14px;
+       height: 29px;
+       width: 268px;
+       padding: 5px; 
+    }
+    
+    .black   {
+       // background: transparent;
+       border: none;
+       font-size: 14px;
+       height: 29px;
+      // width: 268px;
+      -webkit-border-radius: 20px;
+      -moz-border-radius: 20px;
+      border-radius: 20px;
+      background-color: #000; 
+    }
+    
+    
+    .black select   { color: #fff; }
+
+    .container {
+        margin: 20px auto;
+        text-align: justify;
+        width: 550px;
+    }
+
+    /* colorpicker styles */
+    .colorpicker {
+        background-color: #222222;
+        border-radius: 5px 5px 5px 5px;
+        box-shadow: 2px 2px 2px #444444;
+        color: #FFFFFF;
+        font-size: 12px;
+        position: absolute;
+        width: 460px;
+        margin: 0;
+        padding: 0;
+    }
+    #picker {
+        cursor: crosshair;
+        float: left;
+        margin: 10px;
+        border: 0;
+        margin: 0;
+        padding: 0;
+    }
+    .controls {
+        float: right;
+        margin: 10px;
+        margin: 0;
+        padding: 0;
+    }
+    .controls > div {
+        border: 1px solid #2F2F2F;
+        margin-bottom: 5px;
+        overflow: hidden;
+        padding: 5px;
+        margin: 0;
+        padding: 0;
+    }
+    .controls label {
+        float: left;
+    }
+    .controls > div input {
+        background-color: #121212;
+        border: 1px solid #2F2F2F;
+        color: #DDDDDD;
+        float: right;
+        font-size: 10px;
+        height: 14px;
+        margin-left: 6px;
+        text-align: center;
+        text-transform: uppercase;
+        width: 75px;
+    }
+    .preview {
+        background: url("http://ahmedbadary.ml/main_files/select.png") repeat scroll center center transparent;
+        border-radius: 3px;
+        box-shadow: 2px 2px 2px #444444;
+        cursor: pointer;
+        height: 30px;
+        width: 30px;
+        margin: 0;
+        padding: 0;
+        position: relative;
+    }
+    
